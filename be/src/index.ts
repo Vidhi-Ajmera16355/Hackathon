@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.post("/template", async (req: Request, res: Response) => {
   const prompt = req.body.prompt;
-
+  
   try {
     const response = await together.chat.completions.create({
       messages: [
@@ -33,7 +33,10 @@ app.post("/template", async (req: Request, res: Response) => {
       max_tokens: 200,
     });
 
-    const answer = response.choices[0]?.message?.content?.trim();
+    let answer = response.choices[0]?.message?.content?.trim().toLowerCase(); // Normalize response
+
+    console.log("AI Response for Template:", answer); // Debugging output
+
     if (answer === "react") {
       res.json({
         prompts: [
@@ -55,6 +58,7 @@ app.post("/template", async (req: Request, res: Response) => {
       return;
     }
 
+    console.warn("Unexpected AI Response:", answer); // Log unexpected responses
     res.status(403).json({ message: "You can't access this" });
   } catch (error) {
     console.error("Error calling Together AI:", (error as Error).message);
@@ -66,6 +70,8 @@ app.post("/chat", async (req: Request, res: Response) => {
   const messages = req.body.messages;
 
   try {
+    console.log("Messages sent to AI:", JSON.stringify(messages, null, 2)); // Debugging
+
     const response = await together.chat.completions.create({
       messages: [
         {
@@ -78,9 +84,11 @@ app.post("/chat", async (req: Request, res: Response) => {
       max_tokens: 8000,
     });
 
-    res.json({
-      response: response.choices[0]?.message?.content || "No response received.",
-    });
+    const aiResponse = response.choices[0]?.message?.content || "No response received.";
+
+    console.log("AI Response for Build Steps:", aiResponse); // Debugging output
+
+    res.json({ response: aiResponse });
   } catch (error) {
     console.error("Error calling Together AI:", (error as Error).message);
     res.status(500).json({ message: "Internal Server Error" });

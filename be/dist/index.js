@@ -43,7 +43,8 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
             model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
             max_tokens: 200,
         });
-        const answer = (_c = (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.trim();
+        let answer = (_c = (_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.trim().toLowerCase(); // Normalize response
+        console.log("AI Response for Template:", answer); // Debugging output
         if (answer === "react") {
             res.json({
                 prompts: [
@@ -63,6 +64,7 @@ app.post("/template", (req, res) => __awaiter(void 0, void 0, void 0, function* 
             });
             return;
         }
+        console.warn("Unexpected AI Response:", answer); // Log unexpected responses
         res.status(403).json({ message: "You can't access this" });
     }
     catch (error) {
@@ -74,6 +76,7 @@ app.post("/chat", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
     const messages = req.body.messages;
     try {
+        console.log("Messages sent to AI:", JSON.stringify(messages, null, 2)); // Debugging
         const response = yield together.chat.completions.create({
             messages: [
                 {
@@ -85,9 +88,9 @@ app.post("/chat", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             model: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
             max_tokens: 8000,
         });
-        res.json({
-            response: ((_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) || "No response received.",
-        });
+        const aiResponse = ((_b = (_a = response.choices[0]) === null || _a === void 0 ? void 0 : _a.message) === null || _b === void 0 ? void 0 : _b.content) || "No response received.";
+        console.log("AI Response for Build Steps:", aiResponse); // Debugging output
+        res.json({ response: aiResponse });
     }
     catch (error) {
         console.error("Error calling Together AI:", error.message);
